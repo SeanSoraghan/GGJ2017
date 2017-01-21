@@ -177,7 +177,6 @@ public class OSCFeaturesInputHandler
 	}
 }
 
-
 /*************************************************************************************/
 /*************************************************************************************/
 
@@ -186,35 +185,93 @@ public class AudioGestureSegmenter
     public float AudioGestureMinTimeThreshold = 0.2f;
     public float AudioGestureTimeoutThreshold = 0.1f;
     public float VolumeThreshold; 
+    public float LastAudioGestureLength = 0.0f;
+    public float[] GestureFeatureAverages;
 
-    private bool AudioGesturePlaying = false;
     private float TimeSinceLastOnset = 0.0f;
-    private float TimeSinceLastDip = 0.0f; 
+    private float TimeSinceLastDip   = 0.0f; 
 
-    public bool CheckGestureStart (float rms, float deltaTime)
+    private float GestureStartTime = 0.0f;
+
+    private int GestureFrameCount = 0;
+    private float[] GestureFeatureTotals;
+
+    public AudioGestureSegmenter()
     {
+        const int numFeatures  = (int) AudioFeature.NumFeatures;
+		GestureFeatureTotals   = new float[numFeatures];
+        GestureFeatureAverages = new float[numFeatures];
+    }
+
+    public bool CheckGestureStart (ref OSCFeaturesInputHandler osc, float deltaTime)
+    {
+        float rms = osc.Feature (AudioFeature.RMS);
         if (rms > VolumeThreshold)
             TimeSinceLastOnset += deltaTime;
         else
             TimeSinceLastOnset = 0.0f;
-        return TimeSinceLastOnset > AudioGestureMinTimeThreshold;
+        if (TimeSinceLastOnset > AudioGestureMinTimeThreshold)
+        {
+            ResetGestureProperties();
+            GestureStartTime = Time.time;
+            GestureFrameCount ++;
+            for (int i = 0; i < (int) AudioFeature.NumFeatures; i++)
+                GestureFeatureTotals[i] += osc.Feature ((AudioFeature)i);
+            return true;
+        }
+        return false;
     }
 
-    public bool CheckGestureEnd (float rms, float deltaTime)
+    public bool CheckGestureEnd (ref OSCFeaturesInputHandler osc, float deltaTime)
     {
+        float rms = osc.Feature (AudioFeature.RMS);
         if (rms < VolumeThreshold)
             TimeSinceLastDip += Time.deltaTime;
         else
             TimeSinceLastDip = 0.0f;
-        return TimeSinceLastDip > AudioGestureTimeoutThreshold;
+        if (TimeSinceLastDip > AudioGestureTimeoutThreshold)
+        {
+            LastAudioGestureLength = Time.time - GestureStartTime;
+
+            GestureFrameCount ++;
+            for (int i = 0; i < (int) AudioFeature.NumFeatures; i++)
+                GestureFeatureAverages[i] = GestureFeatureTotals[i] / GestureFrameCount;
+
+            return true;
+        }
+        else
+        {
+            GestureFrameCount ++;
+            for (int i = 0; i < (int) AudioFeature.NumFeatures; i++)
+                GestureFeatureTotals[i] += osc.Feature ((AudioFeature)i);
+
+            return false;
+        }
+    }
+
+    public float GetGestureFeature (AudioFeature f)
+    {
+        return GestureFeatureAverages[(int)f];
+    }
+
+    void ResetGestureProperties()
+    {
+        GestureFrameCount = 0;
+        for (int i = 0; i < (int) AudioFeature.NumFeatures; i++)
+        {
+            GestureFeatureTotals[i]   = 0.0f;
+            GestureFeatureAverages[i] = 0.0f;
+        }
     }
 }
+
 /*************************************************************************************/
 /*************************************************************************************/
 
 public class OSCReciever : MonoBehaviour
 {
-    public bool DebugRMSValue = false;
+    
+    public bool DebugAudioFeatures = false;
     public float AudioGestureMinTimeThreshold = 0.2f;
     public float AudioGestureTimeoutThreshold = 0.1f;
 
@@ -238,9 +295,9 @@ public class OSCReciever : MonoBehaviour
     public void OnFeaturesReceived (OscMessage m)
     {
         float rms = osc.Feature (AudioFeature.RMS);
-
-        if (DebugRMSValue)
-            Debug.Log ("RMS: " + rms);
+        float pitch = osc.Feature (AudioFeature.F0);
+        if (DebugAudioFeatures)
+            Debug.Log ("RMS: " + rms + " | Pitch: " + pitch);
 
         osc.OnFeaturesReceived (m);
     }
@@ -254,4 +311,6 @@ public class OSCReciever : MonoBehaviour
     protected virtual void InitialiseLevel() {}
 
     public virtual void MapFeaturesToVisualisers() {}
+
+    
 }

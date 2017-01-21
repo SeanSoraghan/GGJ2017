@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class JellyfishLevelController : OSCReciever
 {
+    public bool DebugPropertiesComparison = false;
     public GameObject JellyfishObject;
     public float VolumeThreshold = 0.1f;
+    public float PitchDifferenceThreshold = 0.1f;
+    public float GestureTimeDifferenceThreshold = 0.1f;
 
-    private int JellyfishIndex = 0;
     private List<GameObject> Jellyfish = new List<GameObject>();
 
     // Use this for initialization
@@ -25,12 +27,12 @@ public class JellyfishLevelController : OSCReciever
 
         if (AudioGesturePlaying)
         {
-            if (AudioSegmenter.CheckGestureEnd (rms, Time.deltaTime))
+            if (AudioSegmenter.CheckGestureEnd (ref osc, Time.deltaTime))
                 AudioGestureEnded();
         }
         else
         { 
-            if (AudioSegmenter.CheckGestureStart (rms, Time.deltaTime))
+            if (AudioSegmenter.CheckGestureStart (ref osc, Time.deltaTime))
                 AudioGestureBegan();
         }
     }
@@ -43,10 +45,9 @@ public class JellyfishLevelController : OSCReciever
     void AudioGestureEnded()
     {
         AudioGesturePlaying = false;
-        if (JellyfishIndex > -1 && JellyfishIndex < Jellyfish.Count)
-        { 
-            MoveJellyfish (JellyfishIndex);
-        }
+        for (int j = 0; j < Jellyfish.Count; ++j)
+            if (DoesGestureMatchJellyfishExpectedProperties (j))
+                MoveJellyfish (j);
     }
 
     void MoveJellyfish (int jellyfishIndex)
@@ -55,4 +56,25 @@ public class JellyfishLevelController : OSCReciever
         if (controller != null)
             controller.BeginMovementTowardsTarget();
     }
+
+    bool DoesGestureMatchJellyfishExpectedProperties (int jellyfishIndex)
+    {
+        JellyfishController controller = Jellyfish[jellyfishIndex].GetComponent<JellyfishController>();
+        if (controller != null)
+        { 
+            float gesturePitch = AudioSegmenter.GetGestureFeature (AudioFeature.F0);
+            float gestureTime  = AudioSegmenter.LastAudioGestureLength;
+            float PitchDifference = Mathf.Abs (gesturePitch - controller.ExpectedPitch);
+            float TimeDifference = Mathf.Abs (gestureTime - controller.ExpectedGestureTime);
+            if (DebugPropertiesComparison)
+            { 
+                Debug.Log ("Pitch: " + gesturePitch + " | Difference: " + PitchDifference);
+                Debug.Log ("Time: " + gestureTime + " | Difference: " + TimeDifference);
+            }
+            return PitchDifference < PitchDifferenceThreshold && TimeDifference < GestureTimeDifferenceThreshold;
+        }
+        return false;
+    }
+
+    
 }

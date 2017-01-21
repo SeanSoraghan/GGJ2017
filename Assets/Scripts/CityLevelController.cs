@@ -69,7 +69,7 @@ public class CityLevelController : OSCReciever
                 IlluminateNextWindow();
                 OverThresholdTime = 0.0f;
             }
-            if (AudioSegmenter.CheckGestureEnd (rms, Time.deltaTime))
+            if (AudioSegmenter.CheckGestureEnd (ref osc, Time.deltaTime))
                 AudioGestureEnded();
         }
         else
@@ -80,7 +80,7 @@ public class CityLevelController : OSCReciever
                 TurnOffLastWindow();
                 UnderThresholdTime = 0.0f;
             }
-            if (AudioSegmenter.CheckGestureStart (rms, Time.deltaTime))
+            if (AudioSegmenter.CheckGestureStart (ref osc, Time.deltaTime))
                 AudioGestureBegan();
         } 
     }

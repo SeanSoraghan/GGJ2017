@@ -1,12 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class JellyfishController : MonoBehaviour
 {
-    public float MovementSpeed = 1.0f;
-    public float MovementTime = 1.0f;
+    public Shader LineShader;
+    public float MovementSpeed                     = 1.0f;
+    public float MovementTime                      = 1.0f;
     public float MovementFinishedThresholdDistance = 0.01f;
+    public float ExpectedPitch                     = 0.5f;
+    public float ExpectedGestureTime               = 0.5f;
 
     private Vector3 TargetPosition;
     private Vector3 CurrentMoveStartPosition;
@@ -22,6 +26,7 @@ public class JellyfishController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        //DrawLine (transform.position + new Vector3 (0, 0, -2), transform.position + new Vector3 (2.0f, 2.0f, -2.0f), Color.black);
         if (ShouldMoveTowardsTarget)
             MoveTowardsTarget();
 	}
@@ -54,6 +59,33 @@ public class JellyfishController : MonoBehaviour
             TargetPosition           = new Vector3 (CurrentMoveStartPosition.x - AxesMovement, CurrentMoveStartPosition.y + AxesMovement, CurrentMoveStartPosition.z);
             CurrentMoveTime = 0.0f;
             ShouldMoveTowardsTarget  = true;
+        }
+    }
+
+    void DrawLine (Vector3 start, Vector3 end, Color color, float duration = 0.2f)
+    {
+        GameObject myLine = new GameObject();
+        myLine.transform.position = start;
+        myLine.AddComponent<LineRenderer>();
+        LineRenderer lr = myLine.GetComponent<LineRenderer>();
+        lr.material = new Material (LineShader);
+        lr.startColor = color;
+        lr.endColor   = color;
+        lr.startWidth = 1.0f;
+        lr.endWidth   = 1.0f;
+        lr.SetPosition (0, start);
+        lr.SetPosition (1, end);
+        GameObject.Destroy(myLine, duration);
+    }
+
+    void DrawSinCurve (Vector3 start, Vector3 end, Color color, float segmentLength = 0.01f, float duration = 0.2f)
+    {
+        float d = Vector3.Distance (end, start);
+        float xIncrement = (end.x - start.x) / segmentLength;
+        float yIncrement = (end.y - start.y) / segmentLength;
+        for (int s = 0; s < segmentLength; s++)
+        {
+
         }
     }
 }
