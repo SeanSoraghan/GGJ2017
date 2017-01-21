@@ -12,7 +12,7 @@ public class SineMovement : MonoBehaviour {
 	public Transform target;
 
 	private Vector3 pos;
-	private Vector3 axis;
+	public Vector3 axis;
 	private float frequency;
 	private float magnitude;
 
