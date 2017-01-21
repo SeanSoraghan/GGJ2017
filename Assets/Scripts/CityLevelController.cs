@@ -7,8 +7,9 @@ public class CityLevelController : OSCReciever
     public GameObject WindowsCollectionObject;
     public GameObject AudioLayersObject;
 
-    public List<AudioSource> AudioLayers = new List<AudioSource>();
-    public List<GameObject> Windows      = new List<GameObject>();
+    private List<AudioSource> AudioLayers = new List<AudioSource>();
+    private List<GameObject> Windows      = new List<GameObject>();
+    private List<float> MaxLevels         = new List<float>();
 
     public float TimeBetweenSwitches = 0.5f;
 
@@ -35,8 +36,13 @@ public class CityLevelController : OSCReciever
         AudioSegmenter.VolumeThreshold = BeginningVolumeThreshold;
 
         if (AudioLayersObject != null)
+        { 
             foreach (AudioSource source in AudioLayersObject.GetComponents<AudioSource>())
+            { 
                 AudioLayers.Add (source);
+                MaxLevels.Add (source.volume);
+            }
+        }
 
         if (AudioLayers.Count > 0)
             AudioLayers[0].Play();

@@ -11,11 +11,26 @@ public class ProceduralSin : MonoBehaviour
     public float Freq = 0.2f;
     public float Amp = 0.35f;
 
+    public float LineSegmentLength = 0.05f;
+
+    private List<GameObject> LineRenderers = new List<GameObject>();
+
     private float WaveStartOffset = 0.0f;
 	// Use this for initialization
 	void Start ()
     {
         WaveStartOffset = Random.Range (0.0f, 1.0f) * Mathf.PI * 2.0f;
+
+        float numSegments = 1.0f;
+        if (LineSegmentLength != 0.0f)
+            numSegments = 1.0f / LineSegmentLength;
+
+        for (int s = 0; s < numSegments; s++)
+        {
+            GameObject lineRendererObject = new GameObject();
+            lineRendererObject.AddComponent<LineRenderer>();
+            LineRenderers.Add (lineRendererObject);
+        }
     }
 	
 	// Update is called once per frame
@@ -25,28 +40,29 @@ public class ProceduralSin : MonoBehaviour
 		    DrawSinCurve (LineStart.position, LineEnd.position, LineColour, Freq, Amp);
 	}
 
-    void DrawLine (Vector3 start, Vector3 end, Color color, float duration = 0.2f)
+    void DrawLine (int lineRendererIndex, Vector3 start, Vector3 end, Color color, float duration = 0.2f)
     {
-        GameObject myLine = new GameObject();
-        myLine.transform.position = start;
-        myLine.AddComponent<LineRenderer>();
-        LineRenderer lr = myLine.GetComponent<LineRenderer>();
-        lr.material = new Material (LineShader);
-        lr.startColor = color;
-        lr.endColor   = color;
-        lr.startWidth = 0.05f;
-        lr.endWidth   = 0.05f;
-        lr.SetPosition (0, start);
-        lr.SetPosition (1, end);
-        GameObject.Destroy(myLine, duration);
+        GameObject lineRendererObject = LineRenderers[lineRendererIndex];
+        lineRendererObject.transform.position = start;
+        LineRenderer lr = lineRendererObject.GetComponent<LineRenderer>();
+        if (lr != null)
+        { 
+            lr.material = new Material (LineShader);
+            lr.startColor = color;
+            lr.endColor   = color;
+            lr.startWidth = 0.05f;
+            lr.endWidth   = 0.05f;
+            lr.SetPosition (0, start);
+            lr.SetPosition (1, end);
+        }
     }
 
-    void DrawSinCurve (Vector3 start, Vector3 end, Color color, float frequency, float amp, float segmentLength = 0.05f, float duration = 0.2f)
+    void DrawSinCurve (Vector3 start, Vector3 end, Color color, float frequency, float amp, float duration = 0.2f)
     {
         float d = Vector3.Distance (end, start);
         float distanceX = end.x - start.x; 
         float distanceY = end.y - start.y;
-        float xIncrement = distanceX * segmentLength; 
+        float xIncrement = distanceX * LineSegmentLength; 
         float gradient = 1.0f;
         if (Mathf.Abs (distanceX) > 0.0f)
             gradient = distanceY / distanceX;
@@ -55,7 +71,10 @@ public class ProceduralSin : MonoBehaviour
         Vector3 directionVec = (end - start).normalized;
         Vector3 perpVec = new Vector3 (directionVec.x, -directionVec.y, directionVec.z);
 
-        float numSegments = 1.0f / segmentLength;
+        float numSegments = 1.0f;
+        if (LineSegmentLength != 0.0f)
+            numSegments = 1.0f / LineSegmentLength;
+
         Vector3 currentPos = start;
         
         float t = WaveStartOffset; 
@@ -65,9 +84,9 @@ public class ProceduralSin : MonoBehaviour
         for (int s = 0; s < numSegments; s++)
         {
             Vector3 target = currentPos + new Vector3 (xIncrement, yIncrement, 0) + Mathf.Sin (t - (Time.time)) * perpVec * a;
-            DrawLine (currentPos, target, color);
+            DrawLine (s, currentPos, target, color);
             currentPos = target;
-            t += segmentLength * Mathf.PI * 2.0f * f;
+            t += LineSegmentLength * Mathf.PI * 2.0f * f;
             //color.a -= segmentLength;
         }
     }
