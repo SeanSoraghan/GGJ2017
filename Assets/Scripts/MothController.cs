@@ -28,9 +28,12 @@ public class MothController : MonoBehaviour {
 		}
 	}
 
+    public bool IsRunning()
+    {
+        return mothRunAway.enabled;
+    }
 
-
-	void RunAway()
+	public void RunAway()
 	{		
 		mothToLight.enabled = false;
 		mothRunAway.enabled = true;

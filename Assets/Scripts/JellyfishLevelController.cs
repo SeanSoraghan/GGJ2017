@@ -6,7 +6,6 @@ public class JellyfishLevelController : OSCReciever
 {
     public bool DebugPropertiesComparison = false;
     public GameObject JellyfishObject;
-    public float VolumeThreshold = 0.1f;
     public float PitchDifferenceThreshold = 0.1f;
     public float GestureTimeDifferenceThreshold = 0.1f;
 
@@ -15,7 +14,7 @@ public class JellyfishLevelController : OSCReciever
     // Use this for initialization
     protected override void InitialiseLevel ()
     {
-        AudioSegmenter.VolumeThreshold = VolumeThreshold;
+        
         if (JellyfishObject != null)
             foreach (Transform jellyfish in JellyfishObject.transform)
                 Jellyfish.Add (jellyfish.gameObject); 
@@ -23,8 +22,6 @@ public class JellyfishLevelController : OSCReciever
 
     public override void MapFeaturesToVisualisers ()
     {
-        float rms = osc.Feature (AudioFeature.RMS);
-
         if (AudioGesturePlaying)
         {
             if (AudioSegmenter.CheckGestureEnd (ref osc, Time.deltaTime))

@@ -270,10 +270,10 @@ public class AudioGestureSegmenter
 
 public class OSCReciever : MonoBehaviour
 {
-    
+    public float VolumeThreshold = 0.4f;
     public bool DebugAudioFeatures = false;
-    public float AudioGestureMinTimeThreshold = 0.2f;
-    public float AudioGestureTimeoutThreshold = 0.1f;
+    public float AudioGestureMinTimeThreshold = 0.06f;
+    public float AudioGestureTimeoutThreshold = 0.06f;
 
     protected OscIn                   OSCHandler;
     protected AudioGestureSegmenter   AudioSegmenter      = new AudioGestureSegmenter();
@@ -289,6 +289,7 @@ public class OSCReciever : MonoBehaviour
         OSCHandler.Map  (featuresAddress, OnFeaturesReceived );
         AudioSegmenter.AudioGestureMinTimeThreshold = AudioGestureMinTimeThreshold;
         AudioSegmenter.AudioGestureTimeoutThreshold = AudioGestureTimeoutThreshold;
+        AudioSegmenter.VolumeThreshold = VolumeThreshold;
         InitialiseLevel();
 	}
 

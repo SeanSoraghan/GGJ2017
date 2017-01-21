@@ -10,6 +10,7 @@ public class CityLevelController : OSCReciever
     private List<AudioSource> AudioLayers = new List<AudioSource>();
     private List<GameObject> Windows      = new List<GameObject>();
     private List<float> MaxLevels         = new List<float>();
+    private List<float> LevelTargets      = new List<float>();
 
     public float TimeBetweenSwitches = 0.5f;
 
@@ -23,6 +24,8 @@ public class CityLevelController : OSCReciever
     private float ThresholdIncrease  = 0.2f;
 
     private int WindowIndex = 0;
+
+    private float VolumeDistanceThreshold = 0.05f;
 
     protected override void InitialiseLevel()
     {
@@ -39,13 +42,12 @@ public class CityLevelController : OSCReciever
         { 
             foreach (AudioSource source in AudioLayersObject.GetComponents<AudioSource>())
             { 
-                AudioLayers.Add (source);
-                MaxLevels.Add (source.volume);
+                AudioLayers.Add  (source);
+                MaxLevels.Add    (source.volume);
+                LevelTargets.Add (0.0f);
+                source.volume = 0.0f;
             }
         }
-
-        if (AudioLayers.Count > 0)
-            AudioLayers[0].Play();
 
         DeactivateWindows();
     }
@@ -122,12 +124,17 @@ public class CityLevelController : OSCReciever
     void UpdateAudioLayers()
     {
         int layer = WindowIndex / NumWindowsPerAudioLayer;
-        for (int audioLayer = 1; audioLayer < AudioLayers.Count; audioLayer++)
+        for (int audioLayer = 0; audioLayer < AudioLayers.Count; audioLayer++)
         {
-            if (layer >= audioLayer && !AudioLayers[audioLayer].isPlaying)
-                AudioLayers[audioLayer].Play();
-            if (layer < audioLayer && AudioLayers[audioLayer].isPlaying)
-                AudioLayers[audioLayer].Stop();
+            float volumeProportion = 0.0f;
+            if (layer >= audioLayer)
+            {
+                int numLitWindowsInLayer = Mathf.Min (WindowIndex - (audioLayer * NumWindowsPerAudioLayer), NumWindowsPerAudioLayer);
+                volumeProportion += numLitWindowsInLayer / (float) NumWindowsPerAudioLayer;
+            }
+            LevelTargets[audioLayer] = volumeProportion * MaxLevels[audioLayer];
+            if (Mathf.Abs (LevelTargets[audioLayer] - AudioLayers[audioLayer].volume) > VolumeDistanceThreshold)
+                AudioLayers[audioLayer].volume = Mathf.Lerp (AudioLayers[audioLayer].volume, LevelTargets[audioLayer], Time.deltaTime);
         }
     }
 
