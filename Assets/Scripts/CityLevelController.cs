@@ -102,6 +102,8 @@ public class CityLevelController : OSCReciever
 
             UpdateThreshold();
             UpdateAudioLayers();
+            if (WindowIndex > Windows.Count - 1)
+                GlobalController.GetGlobalController().PlayWinSound();
         }
     }
 

@@ -11,7 +11,7 @@ public class JellyfishController : MonoBehaviour
     public float MovementFinishedThresholdDistance = 0.01f;
     public float ExpectedPitch                     = 0.5f;
     public float ExpectedGestureTime               = 0.5f;
-    
+    public Transform Target;
 
     private Vector3 TargetPosition;
     private Vector3 CurrentMoveStartPosition;
@@ -63,5 +63,10 @@ public class JellyfishController : MonoBehaviour
         }
     }
 
-    
+    public bool HasPassedTarget()
+    {
+        if (Target != null)
+            return transform.position.x < Target.position.x && transform.position.y > Target.position.y;
+        return false;
+    }
 }

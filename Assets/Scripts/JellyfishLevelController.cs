@@ -32,6 +32,25 @@ public class JellyfishLevelController : OSCReciever
             if (AudioSegmenter.CheckGestureStart (ref osc, Time.deltaTime))
                 AudioGestureBegan();
         }
+        if (HaveAllTargetsBeenReached())
+            GlobalController.GetGlobalController().PlayWinSound();
+        
+    }
+
+    public bool HaveAllTargetsBeenReached()
+    {
+        for (int j = 0; j < Jellyfish.Count; ++j)
+        {
+            GameObject jellyfish = Jellyfish[j];
+            if (jellyfish == null)
+                return false;
+            JellyfishController controller = jellyfish.GetComponent<JellyfishController>();
+            if (controller == null)
+                return false;
+            if (controller != null && !controller.HasPassedTarget())
+                return false;
+        }
+        return true;
     }
 
     void AudioGestureBegan()

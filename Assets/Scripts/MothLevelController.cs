@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class MothLevelController : OSCReciever
 {
+    public int NumRequiredSaves = 3;
     public MothController Moth;
+    public float MothListenYPosition = 0.5f;
 
+    private int NumSaves = 0;
     // Use this for initialization
     protected override void InitialiseLevel ()
     {
@@ -29,8 +32,12 @@ public class MothLevelController : OSCReciever
     void AudioGestureBegan()
     {
         AudioGesturePlaying = true;
-        if (Moth != null && !Moth.IsRunning())
+        if (Moth != null && !Moth.IsRunning() && Moth.transform.position.y <= MothListenYPosition)
+        { 
             Moth.RunAway();
+            if (++NumSaves >= NumRequiredSaves)
+                GlobalController.GetGlobalController().PlayWinSound();
+        }
     }
 
     void AudioGestureEnded()
