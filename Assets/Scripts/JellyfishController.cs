@@ -81,8 +81,13 @@ public class JellyfishController : MonoBehaviour
     void DrawSinCurve (Vector3 start, Vector3 end, Color color, float segmentLength = 0.01f, float duration = 0.2f)
     {
         float d = Vector3.Distance (end, start);
-        float xIncrement = (end.x - start.x) / segmentLength;
+        float distanceX = end.x - start.x; 
+        float distanceY = end.y - start.y;
+        float xIncrement = distanceX / segmentLength;
         float yIncrement = (end.y - start.y) / segmentLength;
+        float gradient = 1.0f;
+        if (Mathf.Abs (distanceX) > 0.0f)
+            gradient = distanceY / distanceX;
         for (int s = 0; s < segmentLength; s++)
         {
 
