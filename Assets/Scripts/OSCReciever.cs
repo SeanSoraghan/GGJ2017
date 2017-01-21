@@ -181,12 +181,48 @@ public class OSCFeaturesInputHandler
 /*************************************************************************************/
 /*************************************************************************************/
 
+public class AudioGestureSegmenter
+{
+    public float AudioGestureMinTimeThreshold = 0.2f;
+    public float AudioGestureTimeoutThreshold = 0.1f;
+    public float VolumeThreshold; 
+
+    private bool AudioGesturePlaying = false;
+    private float TimeSinceLastOnset = 0.0f;
+    private float TimeSinceLastDip = 0.0f; 
+
+    public bool CheckGestureStart (float rms, float deltaTime)
+    {
+        if (rms > VolumeThreshold)
+            TimeSinceLastOnset += deltaTime;
+        else
+            TimeSinceLastOnset = 0.0f;
+        return TimeSinceLastOnset > AudioGestureMinTimeThreshold;
+    }
+
+    public bool CheckGestureEnd (float rms, float deltaTime)
+    {
+        if (rms < VolumeThreshold)
+            TimeSinceLastDip += Time.deltaTime;
+        else
+            TimeSinceLastDip = 0.0f;
+        return TimeSinceLastDip > AudioGestureTimeoutThreshold;
+    }
+}
+/*************************************************************************************/
+/*************************************************************************************/
+
 public class OSCReciever : MonoBehaviour
 {
+    public bool DebugRMSValue = false;
+    public float AudioGestureMinTimeThreshold = 0.2f;
+    public float AudioGestureTimeoutThreshold = 0.1f;
 
-    protected OscIn OSCHandler;
-    protected OSCFeaturesInputHandler osc = new OSCFeaturesInputHandler();
-    const string featuresAddress = "/Audio/A0";
+    protected OscIn                   OSCHandler;
+    protected AudioGestureSegmenter   AudioSegmenter      = new AudioGestureSegmenter();
+    protected bool                    AudioGesturePlaying = false;
+    protected OSCFeaturesInputHandler osc                 = new OSCFeaturesInputHandler();
+    const string                      featuresAddress     = "/Audio/A0";
 
     // Use this for initialization
 	void Start ()
@@ -194,11 +230,18 @@ public class OSCReciever : MonoBehaviour
         OSCHandler = gameObject.AddComponent<OscIn>();
 		OSCHandler.Open (10001);
         OSCHandler.Map  (featuresAddress, OnFeaturesReceived );
+        AudioSegmenter.AudioGestureMinTimeThreshold = AudioGestureMinTimeThreshold;
+        AudioSegmenter.AudioGestureTimeoutThreshold = AudioGestureTimeoutThreshold;
         InitialiseLevel();
 	}
 
     public void OnFeaturesReceived (OscMessage m)
     {
+        float rms = osc.Feature (AudioFeature.RMS);
+
+        if (DebugRMSValue)
+            Debug.Log ("RMS: " + rms);
+
         osc.OnFeaturesReceived (m);
     }
 

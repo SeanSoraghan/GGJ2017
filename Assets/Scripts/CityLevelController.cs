@@ -2,65 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudioGestureSegmenter
-{
-    public float AudioGestureMinTimeThreshold = 0.2f;
-    public float AudioGestureTimeoutThreshold = 0.1f;
-    public float VolumeThreshold; 
-
-    private bool AudioGesturePlaying = false;
-    private float TimeSinceLastOnset = 0.0f;
-    private float TimeSinceLastDip = 0.0f; 
-
-    public bool CheckGestureStart (float rms, float deltaTime)
-    {
-        if (rms > VolumeThreshold)
-            TimeSinceLastOnset += deltaTime;
-        else
-            TimeSinceLastOnset = 0.0f;
-        return TimeSinceLastOnset > AudioGestureMinTimeThreshold;
-    }
-
-    public bool CheckGestureEnd (float rms, float deltaTime)
-    {
-        if (rms < VolumeThreshold)
-            TimeSinceLastDip += Time.deltaTime;
-        else
-            TimeSinceLastDip = 0.0f;
-        return TimeSinceLastDip > AudioGestureTimeoutThreshold;
-    }
-}
-/*************************************************************************************/
-/*************************************************************************************/
-
 public class CityLevelController : OSCReciever
 {
     public GameObject WindowsCollectionObject;
     public GameObject AudioLayersObject;
 
     public List<AudioSource> AudioLayers = new List<AudioSource>();
-    public List<GameObject> Windows = new List<GameObject>();
+    public List<GameObject> Windows      = new List<GameObject>();
 
     public float TimeBetweenSwitches = 0.5f;
 
     public float BeginningVolumeThreshold = 0.1f;
-    public float FinalVolumeThreshold = 0.9f;
-    public int NumWindowsPerLevel = 4;
+    public float FinalVolumeThreshold     = 0.9f;
+    public int NumWindowsPerLevel         = 4;
+    public int NumWindowsPerAudioLayer    = 8;
 
-    public int NumWindowsPerAudioLayer = 8;
-
-    public float AudioGestureMinTimeThreshold = 0.2f;
-    public float AudioGestureTimeoutThreshold = 0.1f;
-    public bool DebugRMSValue = false;
-
-    private bool AudioGesturePlaying = false;
-    private float OverThresholdTime = 0.0f;
+    private float OverThresholdTime  = 0.0f;
     private float UnderThresholdTime = 0.0f;
-    private float ThresholdIncrease = 0.2f;
+    private float ThresholdIncrease  = 0.2f;
 
     private int WindowIndex = 0;
-
-    private AudioGestureSegmenter AudioSegmenter = new AudioGestureSegmenter();
 
     protected override void InitialiseLevel()
     {
@@ -71,8 +32,6 @@ public class CityLevelController : OSCReciever
         int NumLevels = Windows.Count / NumWindowsPerLevel;
         ThresholdIncrease = (FinalVolumeThreshold - BeginningVolumeThreshold) / NumLevels;
 
-        AudioSegmenter.AudioGestureMinTimeThreshold = AudioGestureMinTimeThreshold;
-        AudioSegmenter.AudioGestureTimeoutThreshold = AudioGestureTimeoutThreshold;
         AudioSegmenter.VolumeThreshold = BeginningVolumeThreshold;
 
         if (AudioLayersObject != null)
@@ -101,9 +60,6 @@ public class CityLevelController : OSCReciever
     public override void MapFeaturesToVisualisers()
     {
         float rms = osc.Feature (AudioFeature.RMS);
-
-        if (DebugRMSValue)
-            Debug.Log ("RMS: " + rms + " | Current Thresh: " + AudioSegmenter.VolumeThreshold);
 
         if (AudioGesturePlaying)
         {
