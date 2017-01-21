@@ -8,13 +8,15 @@ public class JellyfishLevelController : OSCReciever
     public GameObject JellyfishObject;
     public float PitchDifferenceThreshold = 0.1f;
     public float GestureTimeDifferenceThreshold = 0.1f;
+    public GameObject AudioLayersObject;
 
+    private AudioLevelsManager LevelsManager = new AudioLevelsManager();
     private List<GameObject> Jellyfish = new List<GameObject>();
 
     // Use this for initialization
     protected override void InitialiseLevel ()
     {
-        
+        LevelsManager.InitialiseFromGameObject (AudioLayersObject);
         if (JellyfishObject != null)
             foreach (Transform jellyfish in JellyfishObject.transform)
                 Jellyfish.Add (jellyfish.gameObject); 
@@ -56,14 +58,14 @@ public class JellyfishLevelController : OSCReciever
     void AudioGestureBegan()
     {
         AudioGesturePlaying = true;
+        for (int j = 0; j < Jellyfish.Count; ++j)
+            if (DoesGestureMatchJellyfishExpectedProperties (j))
+                MoveJellyfish (j);
     }
 
     void AudioGestureEnded()
     {
         AudioGesturePlaying = false;
-        for (int j = 0; j < Jellyfish.Count; ++j)
-            if (DoesGestureMatchJellyfishExpectedProperties (j))
-                MoveJellyfish (j);
     }
 
     void MoveJellyfish (int jellyfishIndex)
@@ -87,7 +89,7 @@ public class JellyfishLevelController : OSCReciever
                 Debug.Log ("Pitch: " + gesturePitch + " | Difference: " + PitchDifference);
                 Debug.Log ("Time: " + gestureTime + " | Difference: " + TimeDifference);
             }
-            return PitchDifference < PitchDifferenceThreshold && TimeDifference < GestureTimeDifferenceThreshold;
+            return PitchDifference < PitchDifferenceThreshold;// && TimeDifference < GestureTimeDifferenceThreshold;
         }
         return false;
     }

@@ -22,12 +22,14 @@ public class JellyfishController : MonoBehaviour
 	void Start ()
     {
 		CurrentMoveStartPosition = transform.position;
+        AudioSource[] audioSources = GetComponents<AudioSource>();
+        foreach (AudioSource source in audioSources)
+            source.volume = 0.15f;
 	}
 	
 	// Update is called once per frame
 	void Update ()
     {
-        
         if (ShouldMoveTowardsTarget)
             MoveTowardsTarget();
 	}
@@ -52,14 +54,30 @@ public class JellyfishController : MonoBehaviour
 
     public void BeginMovementTowardsTarget()
     {
-        if (!ShouldMoveTowardsTarget)
+        if (!ShouldMoveTowardsTarget && !HasPassedTarget())
         { 
+            TriggerWaterSound();
             CurrentMoveStartPosition = transform.position;
             float MovementDiagonal   = MovementSpeed * MovementTime;
             float AxesMovement       = (Mathf.Sqrt (MovementDiagonal)) / 2.0f;
             TargetPosition           = new Vector3 (CurrentMoveStartPosition.x - AxesMovement, CurrentMoveStartPosition.y + AxesMovement, CurrentMoveStartPosition.z);
             CurrentMoveTime = 0.0f;
             ShouldMoveTowardsTarget  = true;
+        }
+        
+    }
+
+    public void TriggerWaterSound()
+    {
+        AudioSource[] audioSources = GetComponents<AudioSource>();
+        if (audioSources.Length > 0)
+        {
+            int audioSourceIndex = (int) Mathf.Floor (Random.Range (0.0f, audioSources.Length - 0.01f));
+            //while (audioSourceIndex < 0 || audioSourceIndex > audioSources.Length - 1)
+            //    audioSourceIndex = (int) Mathf.Floor (Random.Range (0.0f, audioSources.Length - 0.01f));
+            //while (audioSources[audioSourceIndex].isPlaying)
+            //    audioSourceIndex = (int) Mathf.Floor (Random.Range (0.0f, audioSources.Length - 0.01f));
+            audioSources[audioSourceIndex].Play();
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityStandardAssets.CinematicEffects;
 using UnityEngine;
 using UnityOSC;
 
@@ -268,12 +269,48 @@ public class AudioGestureSegmenter
 /*************************************************************************************/
 /*************************************************************************************/
 
+public class AudioLevelsManager
+{
+    public GameObject AudioLayersObject;
+    public float VolumeDistanceThreshold = 0.05f;
+    public List<AudioSource> AudioLayers = new List<AudioSource>();
+    public List<float> MaxLevels         = new List<float>();
+    public List<float> LevelTargets      = new List<float>();
+
+    public void InitialiseFromGameObject (GameObject AudioLayersObject)
+    {
+        if (AudioLayersObject != null)
+        { 
+            foreach (AudioSource source in AudioLayersObject.GetComponents<AudioSource>())
+            { 
+                AudioLayers.Add  (source);
+                MaxLevels.Add    (source.volume);
+                LevelTargets.Add (0.0f);
+                source.volume = 0.0f;
+            }
+        }
+    }
+
+    public void UpdateLevels()
+    {
+        for (int audioLayer = 0; audioLayer < AudioLayers.Count; audioLayer++)
+            if (Mathf.Abs (LevelTargets[audioLayer] - AudioLayers[audioLayer].volume) > VolumeDistanceThreshold)
+                AudioLayers[audioLayer].volume = Mathf.Lerp (AudioLayers[audioLayer].volume, LevelTargets[audioLayer], Time.deltaTime);
+    }
+}
+
+/*************************************************************************************/
+/*************************************************************************************/
+
 public class OSCReciever : MonoBehaviour
 {
     public float VolumeThreshold = 0.4f;
     public bool DebugAudioFeatures = false;
     public float AudioGestureMinTimeThreshold = 0.06f;
     public float AudioGestureTimeoutThreshold = 0.06f;
+
+    public Bloom CameraBloom;
+    public TonemappingColorGrading CameraToneMapping;
 
     protected OscIn                   OSCHandler;
     protected AudioGestureSegmenter   AudioSegmenter      = new AudioGestureSegmenter();
@@ -306,12 +343,28 @@ public class OSCReciever : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        float rms = osc.Feature (AudioFeature.RMS);
+        float pitch = osc.Feature (AudioFeature.F0);
+        if (CameraBloom != null)
+        { 
+            CameraBloom.settings.threshold = pitch * 0.4f + 0.5f;
+            CameraBloom.settings.radius    = rms * 4.0f + 1.0f;
+            CameraBloom.settings.intensity = pitch + rms; //average * 2 to map to 0-2...
+        }
+        if (CameraToneMapping != null)
+        {
+            //TonemappingColorGrading.ColorGradingSettings b = new TonemappingColorGrading.ColorGradingSettings();
+           // b.basics.saturation = rms * 0.7f + 0.3f;
+            //CameraToneMapping.colorGrading = b;
+           // CameraToneMapping.colorGrading.basics.saturation = rms * 0.3f + 0.7f;
+        }
 		MapFeaturesToVisualisers();
 	}
 
     protected virtual void InitialiseLevel() {}
 
-    public virtual void MapFeaturesToVisualisers() {}
+    public virtual void MapFeaturesToVisualisers()
+    {}
 
     
 }
