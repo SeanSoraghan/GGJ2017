@@ -29,7 +29,9 @@ public class GlobalController : MonoBehaviour
     private void NextLevel()
     {
         LevelIndex++;
-        if (LevelIndex > 0 && LevelIndex < Levels.Length)
+        if (LevelIndex >= Levels.Length)
+            LevelIndex = 0;
+        if (LevelIndex > -1 && LevelIndex < Levels.Length)
             SceneManager.LoadScene (Levels[LevelIndex]);
     }
 
