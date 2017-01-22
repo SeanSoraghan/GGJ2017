@@ -1,10 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GlobalController : MonoBehaviour
 {
     static GameObject GlobalControllerObject;
+
+    public string[] Levels = /*IntroductionScene*/ { "MoonScene", "JellyfishScene", "FlowerScene", "MothScene", "CityScene"}; /*WinScreen*/
+    private int LevelIndex = 0;
 
     void Awake()
     {
@@ -22,10 +26,29 @@ public class GlobalController : MonoBehaviour
             source.Play();
     }
 
-	// Update is called once per frame
-	void Update ()
+    private void NextLevel()
     {
-		
+        LevelIndex++;
+        if (LevelIndex > 0 && LevelIndex < Levels.Length)
+            SceneManager.LoadScene (Levels[LevelIndex]);
+    }
+
+    public void CurrentLevelCompleted()
+    {
+        PlayWinSound();
+        LoadNextLevel();
+    }
+
+    public void LoadNextLevel()
+    {
+        StartCoroutine (LoadNextLevelAfterDelay());
+    }
+	// Update is called once per frame
+	IEnumerator LoadNextLevelAfterDelay()
+	{
+		yield return new WaitForSeconds (2);
+	    NextLevel ();
+		yield return null;
 	}
 
     public static GlobalController GetGlobalController()

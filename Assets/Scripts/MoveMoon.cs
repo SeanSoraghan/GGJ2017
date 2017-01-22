@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MoveMoon : MonoBehaviour {
 
+    public bool MoonShouldMove = false;
     public float moveSpeed = 0.5f;
     public float returnSpeed = 0.25f;
 
@@ -15,13 +16,9 @@ public class MoveMoon : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-
-       
-
-        if (Input.GetKey(KeyCode.P))
+        if (Input.GetKey(KeyCode.P) || MoonShouldMove)
         {
             gameObject.transform.Translate(Vector3.left * moveSpeed * Time.deltaTime);
-            Debug.Log(transform.position.x);
         }
         else
         {
