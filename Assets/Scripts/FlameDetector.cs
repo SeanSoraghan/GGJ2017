@@ -17,6 +17,11 @@ public class FlameDetector : MonoBehaviour {
 		}
 	}
 
+	public void TriggerWobbleFlame()
+	{
+		StartCoroutine (WobbleFlame ());
+	}
+
 	IEnumerator WobbleFlame()
 	{
 		wobbler.amount = 0.6f;
