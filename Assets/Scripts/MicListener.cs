@@ -50,7 +50,6 @@ public class MicListener : MonoBehaviour
         if (AnalysisBufferSize > 0.0f)
             squareMean = squareSum / AnalysisBufferSize;
         float rms = Mathf.Sqrt (squareMean);
-        Debug.Log ("RMSCalculated: " + rms);
         RMS.setNewValueFromNewObservation (Mathf.Clamp (rms, 0.0f, 1.0f));
     }
 
