@@ -32,4 +32,11 @@ public class StartLevelController : OSCReciever
         if (AnimationComplete) { Debug.Log ("StartGame"); }
             
     }
+
+    public override void AudioGestureBegan ()
+    {
+        base.AudioGestureBegan ();
+        if (AnimationComplete) { Debug.Log ("StartGame"); }
+            
+    }
 }
