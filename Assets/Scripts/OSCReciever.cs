@@ -363,7 +363,10 @@ public class OSCReciever : MonoBehaviour
     protected AudioGestureSegmenter   AudioSegmenter      = new AudioGestureSegmenter();
     protected bool                    AudioGesturePlaying = false;
     protected OSCFeaturesInputHandler osc                 = new OSCFeaturesInputHandler();
+
     protected bool ShouldMapSoundtoBloom                  = true;
+    protected bool LevelComplete = false;
+
     const string                      featuresAddress     = "/Audio/A0";
 
     // Use this for initialization
@@ -458,5 +461,14 @@ public class OSCReciever : MonoBehaviour
     public virtual void AudioRMSGestureBegan() { AudioGesturePlaying = true; }
     public virtual void AudioRMSGestureEnded() { AudioGesturePlaying = false; }
 
+    protected void LevelCompleted()
+    {
+        if (!LevelComplete)
+        {
+            LevelComplete = true;
+            GlobalController.GetGlobalController().PlayWinSound();
+            GlobalController.GetGlobalController().LoadNextLevel();
+        }
+    }
     
 }
