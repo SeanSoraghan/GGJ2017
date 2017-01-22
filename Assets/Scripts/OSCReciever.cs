@@ -363,6 +363,7 @@ public class OSCReciever : MonoBehaviour
     protected AudioGestureSegmenter   AudioSegmenter      = new AudioGestureSegmenter();
     protected bool                    AudioGesturePlaying = false;
     protected OSCFeaturesInputHandler osc                 = new OSCFeaturesInputHandler();
+    protected bool LevelComplete = false;
     const string                      featuresAddress     = "/Audio/A0";
 
     // Use this for initialization

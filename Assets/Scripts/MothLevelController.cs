@@ -32,7 +32,7 @@ public class MothLevelController : OSCReciever
         { 
             Moth.RunAway();
             if (++NumSaves >= NumRequiredSaves)
-                GlobalController.GetGlobalController().PlayWinSound();
+                GlobalController.GetGlobalController().CurrentLevelCompleted();
         }
     }
 
@@ -49,7 +49,7 @@ public class MothLevelController : OSCReciever
         { 
             Moth.RunAway();
             if (++NumSaves >= NumRequiredSaves)
-                GlobalController.GetGlobalController().PlayWinSound();
+                GlobalController.GetGlobalController().CurrentLevelCompleted();
         }
     }
 }

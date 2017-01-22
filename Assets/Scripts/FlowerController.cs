@@ -11,6 +11,8 @@ public class FlowerController : MonoBehaviour {
 	public float speedOpening=0.4f;
 	public float speedClosing=1;
 
+    public bool OpenFlower = false;
+
 	float interpolator;
 	// Use this for initialization
 	void Start () {
@@ -24,12 +26,9 @@ public class FlowerController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
-		Debug.Log (interpolator);
-
 		if (interpolator<=1)
 		{
-			if (Input.GetKey ("a"))
+			if (Input.GetKey ("a") || OpenFlower)
 				interpolator += Time.deltaTime*speedOpening;
 			else
 			{
