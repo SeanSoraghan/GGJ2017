@@ -29,14 +29,16 @@ public class StartLevelController : OSCReciever
     public override void AudioRMSGestureBegan ()
     {
         base.AudioRMSGestureBegan ();
-        if (AnimationComplete) { Debug.Log ("StartGame"); }
+        if (AnimationComplete)
+            GlobalController.GetGlobalController().CurrentLevelCompleted();
             
     }
 
     public override void AudioGestureBegan ()
     {
         base.AudioGestureBegan ();
-        if (AnimationComplete) { Debug.Log ("StartGame"); }
+        if (AnimationComplete)
+            GlobalController.GetGlobalController().CurrentLevelCompleted();
             
     }
 }

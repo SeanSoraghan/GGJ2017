@@ -18,7 +18,7 @@ public class MountainLevelController : OSCReciever
         bool Cloud2Passed = Cloud2.gameObject.transform.position.x > Cloud2Target.transform.position.x;
         if (cloud1Passed && Cloud2Passed)
         {
-            Debug.Log ("LevelComplete");
+            GlobalController.GetGlobalController().CurrentLevelCompleted();
         }
     }
 
