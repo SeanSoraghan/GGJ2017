@@ -24,16 +24,7 @@ public class JellyfishLevelController : OSCReciever
 
     public override void MapFeaturesToVisualisers ()
     {
-        if (AudioGesturePlaying)
-        {
-            if (AudioSegmenter.CheckGestureEnd (ref osc, Time.deltaTime))
-                AudioGestureEnded();
-        }
-        else
-        { 
-            if (AudioSegmenter.CheckGestureStart (ref osc, Time.deltaTime))
-                AudioGestureBegan();
-        }
+        base.MapFeaturesToVisualisers();
         if (HaveAllTargetsBeenReached())
             GlobalController.GetGlobalController().PlayWinSound();
         
@@ -55,17 +46,20 @@ public class JellyfishLevelController : OSCReciever
         return true;
     }
 
-    void AudioGestureBegan()
+    public override void AudioGestureBegan()
     {
-        AudioGesturePlaying = true;
+        base.AudioGestureBegan();
         for (int j = 0; j < Jellyfish.Count; ++j)
-            if (DoesGestureMatchJellyfishExpectedProperties (j))
+            if (DoesGestureMatchJellyfishExpectedProperties (j, true, true))
                 MoveJellyfish (j);
     }
 
-    void AudioGestureEnded()
+    public override void AudioRMSGestureBegan()
     {
-        AudioGesturePlaying = false;
+        base.AudioRMSGestureBegan();
+        for (int j = 0; j < Jellyfish.Count; ++j)
+            if (DoesGestureMatchJellyfishExpectedProperties (j, false, true))
+                MoveJellyfish (j);
     }
 
     void MoveJellyfish (int jellyfishIndex)
@@ -75,7 +69,7 @@ public class JellyfishLevelController : OSCReciever
             controller.BeginMovementTowardsTarget();
     }
 
-    bool DoesGestureMatchJellyfishExpectedProperties (int jellyfishIndex)
+    bool DoesGestureMatchJellyfishExpectedProperties (int jellyfishIndex, bool comparePitch, bool compareTime)
     {
         JellyfishController controller = Jellyfish[jellyfishIndex].GetComponent<JellyfishController>();
         if (controller != null)
@@ -89,7 +83,12 @@ public class JellyfishLevelController : OSCReciever
                 Debug.Log ("Pitch: " + gesturePitch + " | Difference: " + PitchDifference);
                 Debug.Log ("Time: " + gestureTime + " | Difference: " + TimeDifference);
             }
-            return PitchDifference < PitchDifferenceThreshold;// && TimeDifference < GestureTimeDifferenceThreshold;
+            bool match = true;
+            if (comparePitch)
+                match = match && PitchDifference < PitchDifferenceThreshold;
+            if (compareTime)
+                match = match && TimeDifference < GestureTimeDifferenceThreshold;
+            return match;
         }
         return false;
     }

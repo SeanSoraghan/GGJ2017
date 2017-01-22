@@ -54,7 +54,7 @@ public class CityLevelController : OSCReciever
 
     public override void MapFeaturesToVisualisers()
     {
-        float rms = osc.Feature (AudioFeature.RMS);
+        base.MapFeaturesToVisualisers();
 
         if (AudioGesturePlaying)
         {
@@ -64,8 +64,6 @@ public class CityLevelController : OSCReciever
                 IlluminateNextWindow();
                 OverThresholdTime = 0.0f;
             }
-            if (AudioSegmenter.CheckGestureEnd (ref osc, Time.deltaTime))
-                AudioGestureEnded();
         }
         else
         { 
@@ -75,8 +73,6 @@ public class CityLevelController : OSCReciever
                 TurnOffLastWindow();
                 UnderThresholdTime = 0.0f;
             }
-            if (AudioSegmenter.CheckGestureStart (ref osc, Time.deltaTime))
-                AudioGestureBegan();
         } 
     }
 
@@ -126,15 +122,27 @@ public class CityLevelController : OSCReciever
         LevelsManager.UpdateLevels();
     }
 
-    void AudioGestureBegan()
+    public override void AudioGestureBegan()
     {
-        AudioGesturePlaying = true;
+        base.AudioGestureBegan();
         UnderThresholdTime = 0.0f;
     }
 
-    void AudioGestureEnded()
+    public override void AudioGestureEnded()
     {
-        AudioGesturePlaying = false;
+        base.AudioGestureEnded();
+        OverThresholdTime = 0.0f;
+    }
+
+    public override void AudioRMSGestureBegan()
+    {
+        base.AudioRMSGestureBegan();
+        UnderThresholdTime = 0.0f;
+    }
+
+    public override void AudioRMSGestureEnded()
+    {
+        base.AudioRMSGestureEnded();
         OverThresholdTime = 0.0f;
     }
 }

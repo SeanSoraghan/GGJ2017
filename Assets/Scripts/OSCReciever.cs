@@ -188,6 +188,7 @@ public class AudioGestureSegmenter
     public float VolumeThreshold; 
     public float LastAudioGestureLength = 0.0f;
     public float[] GestureFeatureAverages;
+    public float GestureRMSAverage = 0.0f;
 
     private float TimeSinceLastOnset = 0.0f;
     private float TimeSinceLastDip   = 0.0f; 
@@ -196,6 +197,7 @@ public class AudioGestureSegmenter
 
     private int GestureFrameCount = 0;
     private float[] GestureFeatureTotals;
+    private float GestureRMSTotal;
 
     public AudioGestureSegmenter()
     {
@@ -223,6 +225,24 @@ public class AudioGestureSegmenter
         return false;
     }
 
+    public bool CheckRMSGestureStart (float rms, float deltaTime)
+    {
+        if (rms > VolumeThreshold)
+            TimeSinceLastOnset += deltaTime;
+        else
+            TimeSinceLastOnset = 0.0f;
+        if (TimeSinceLastOnset > AudioGestureMinTimeThreshold)
+        {
+            ResetGestureProperties();
+            GestureStartTime = Time.time;
+            GestureFrameCount ++;
+            for (int i = 0; i < (int) AudioFeature.NumFeatures; i++)
+                GestureRMSTotal += rms;
+            return true;
+        }
+        return false;
+    }
+
     public bool CheckGestureEnd (ref OSCFeaturesInputHandler osc, float deltaTime)
     {
         float rms = osc.Feature (AudioFeature.RMS);
@@ -245,6 +265,32 @@ public class AudioGestureSegmenter
             GestureFrameCount ++;
             for (int i = 0; i < (int) AudioFeature.NumFeatures; i++)
                 GestureFeatureTotals[i] += osc.Feature ((AudioFeature)i);
+
+            return false;
+        }
+    }
+
+    public bool CheckRMSGestureEnd (float rms, float deltaTime)
+    {
+        if (rms < VolumeThreshold)
+            TimeSinceLastDip += Time.deltaTime;
+        else
+            TimeSinceLastDip = 0.0f;
+        if (TimeSinceLastDip > AudioGestureTimeoutThreshold)
+        {
+            LastAudioGestureLength = Time.time - GestureStartTime;
+
+            GestureFrameCount ++;
+            for (int i = 0; i < (int) AudioFeature.NumFeatures; i++)
+                GestureRMSAverage = GestureRMSTotal / GestureFrameCount;
+
+            return true;
+        }
+        else
+        {
+            GestureFrameCount ++;
+            for (int i = 0; i < (int) AudioFeature.NumFeatures; i++)
+                GestureRMSTotal += rms;
 
             return false;
         }
@@ -304,11 +350,12 @@ public class AudioLevelsManager
 
 public class OSCReciever : MonoBehaviour
 {
+    public bool UseExternalFeatureExtractor = false;
     public float VolumeThreshold = 0.4f;
     public bool DebugAudioFeatures = false;
     public float AudioGestureMinTimeThreshold = 0.06f;
     public float AudioGestureTimeoutThreshold = 0.06f;
-
+    protected MicListener MicRMSListener;
     public Bloom CameraBloom;
     public TonemappingColorGrading CameraToneMapping;
 
@@ -327,6 +374,7 @@ public class OSCReciever : MonoBehaviour
         AudioSegmenter.AudioGestureMinTimeThreshold = AudioGestureMinTimeThreshold;
         AudioSegmenter.AudioGestureTimeoutThreshold = AudioGestureTimeoutThreshold;
         AudioSegmenter.VolumeThreshold = VolumeThreshold;
+        MicRMSListener = MicListener.GetGlobalMicListener();
         InitialiseLevel();
 	}
 
@@ -334,7 +382,7 @@ public class OSCReciever : MonoBehaviour
     {
         float rms = osc.Feature (AudioFeature.RMS);
         float pitch = osc.Feature (AudioFeature.F0);
-        if (DebugAudioFeatures)
+        if (DebugAudioFeatures && UseExternalFeatureExtractor)
             Debug.Log ("RMS: " + rms + " | Pitch: " + pitch);
 
         osc.OnFeaturesReceived (m);
@@ -343,28 +391,68 @@ public class OSCReciever : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        float rms = osc.Feature (AudioFeature.RMS);
-        float pitch = osc.Feature (AudioFeature.F0);
-        if (CameraBloom != null)
+        if (UseExternalFeatureExtractor)
         { 
-            CameraBloom.settings.threshold = pitch * 0.4f + 0.5f;
-            CameraBloom.settings.radius    = rms * 4.0f + 1.0f;
-            CameraBloom.settings.intensity = pitch + rms; //average * 2 to map to 0-2...
+            float rms = osc.Feature (AudioFeature.RMS);
+            float pitch = osc.Feature (AudioFeature.F0);
+            if (CameraBloom != null)
+            { 
+                CameraBloom.settings.threshold = pitch * 0.4f + 0.5f;
+                CameraBloom.settings.radius    = rms * 4.0f + 1.0f;
+                CameraBloom.settings.intensity = pitch + rms; //average * 2 to map to 0-2...
+            }
         }
-        if (CameraToneMapping != null)
+        else if (MicRMSListener != null)
         {
-            //TonemappingColorGrading.ColorGradingSettings b = new TonemappingColorGrading.ColorGradingSettings();
-           // b.basics.saturation = rms * 0.7f + 0.3f;
-            //CameraToneMapping.colorGrading = b;
-           // CameraToneMapping.colorGrading.basics.saturation = rms * 0.3f + 0.7f;
+            float rms = MicRMSListener.RMS.getValue();
+            if (CameraBloom != null)
+            { 
+                CameraBloom.settings.threshold = rms * 0.4f + 0.5f;
+                CameraBloom.settings.radius    = rms * 4.0f + 1.0f;
+                CameraBloom.settings.intensity = rms * 2.0f;
+            }
         }
+        if (DebugAudioFeatures && !UseExternalFeatureExtractor && MicRMSListener != null)
+            Debug.Log ("RMS: " + MicRMSListener.RMS.getValue());
 		MapFeaturesToVisualisers();
 	}
 
     protected virtual void InitialiseLevel() {}
 
     public virtual void MapFeaturesToVisualisers()
-    {}
+    {
+        if (AudioGesturePlaying)
+        {
+            if (UseExternalFeatureExtractor)
+            { 
+                if (AudioSegmenter.CheckGestureEnd (ref osc, Time.deltaTime))
+                    AudioGestureEnded();
+            }
+            else if (MicRMSListener != null && AudioSegmenter.CheckRMSGestureEnd (MicRMSListener.RMS.getValue(), Time.deltaTime))
+            {
+                AudioRMSGestureEnded();
+            }
+        }
+        else
+        { 
+            if (UseExternalFeatureExtractor)
+            { 
+                if (AudioSegmenter.CheckGestureStart (ref osc, Time.deltaTime))
+                    AudioGestureBegan();
+            }
+            else if (MicRMSListener != null && AudioSegmenter.CheckRMSGestureStart (MicRMSListener.RMS.getValue(), Time.deltaTime))
+            { 
+                AudioRMSGestureBegan();
+            }
+        }
+    }
+
+    public virtual void AudioGestureBegan() { AudioGesturePlaying = true; }
+
+    public virtual void AudioGestureEnded() { AudioGesturePlaying = false; }
+
+    public virtual void AudioRMSGestureBegan() { AudioGesturePlaying = true; }
+    public virtual void AudioRMSGestureEnded() { AudioGesturePlaying = false; }
 
     
 }

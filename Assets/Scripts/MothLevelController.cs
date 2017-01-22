@@ -17,21 +17,12 @@ public class MothLevelController : OSCReciever
 
     public override void MapFeaturesToVisualisers ()
     {
-        if (AudioGesturePlaying)
-        {
-            if (AudioSegmenter.CheckGestureEnd (ref osc, Time.deltaTime))
-                AudioGestureEnded();
-        }
-        else
-        { 
-            if (AudioSegmenter.CheckGestureStart (ref osc, Time.deltaTime))
-                AudioGestureBegan();
-        }
+        base.MapFeaturesToVisualisers();
     }
 
-    void AudioGestureBegan()
+    public override void AudioGestureBegan()
     {
-        AudioGesturePlaying = true;
+        base.AudioGestureBegan();
         if (Moth != null && !Moth.IsRunning() && Moth.transform.position.y <= MothListenYPosition)
         { 
             Moth.RunAway();
@@ -40,8 +31,14 @@ public class MothLevelController : OSCReciever
         }
     }
 
-    void AudioGestureEnded()
+    public override void AudioRMSGestureBegan()
     {
-        AudioGesturePlaying = false;
+        base.AudioRMSGestureBegan();
+        if (Moth != null && !Moth.IsRunning() && Moth.transform.position.y <= MothListenYPosition)
+        { 
+            Moth.RunAway();
+            if (++NumSaves >= NumRequiredSaves)
+                GlobalController.GetGlobalController().PlayWinSound();
+        }
     }
 }
