@@ -7,7 +7,7 @@ public class GlobalController : MonoBehaviour
 {
     static GameObject GlobalControllerObject;
 
-    public string[] Levels = /*IntroductionScene*/ { "MoonScene", "JellyfishScene", "FlowerScene", "MothScene", "CityScene"}; /*WinScreen*/
+    public string[] Levels = /*IntroductionScene*/ { "MoonScene", "CityScene", "JellyfishScene", "MothScene", /*fish*/ "FlowerScene"}; /*owl, sky/mountain*/ /*WinScreen*/
     private int LevelIndex = 0;
 
     void Awake()

@@ -32,7 +32,7 @@ public class MothLevelController : OSCReciever
         { 
             Moth.RunAway();
             if (++NumSaves >= NumRequiredSaves)
-                GlobalController.GetGlobalController().CurrentLevelCompleted();
+                LevelCompleted();
         }
     }
 

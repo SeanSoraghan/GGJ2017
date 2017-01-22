@@ -455,5 +455,14 @@ public class OSCReciever : MonoBehaviour
     public virtual void AudioRMSGestureBegan() { AudioGesturePlaying = true; }
     public virtual void AudioRMSGestureEnded() { AudioGesturePlaying = false; }
 
+    protected void LevelCompleted()
+    {
+        if (!LevelComplete)
+        {
+            LevelComplete = true;
+            GlobalController.GetGlobalController().PlayWinSound();
+            GlobalController.GetGlobalController().LoadNextLevel();
+        }
+    }
     
 }

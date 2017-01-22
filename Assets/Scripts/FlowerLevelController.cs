@@ -13,10 +13,9 @@ public class FlowerLevelController : OSCReciever
         base.MapFeaturesToVisualisers ();
         if (Flower != null && Flower.OpenFlower != AudioGesturePlaying)
             Flower.OpenFlower = AudioGesturePlaying;
-        if (HasBeeReachedTarget() && !LevelComplete)
+        if (HasBeeReachedTarget())
         { 
-            LevelComplete = true;
-            GlobalController.GetGlobalController().CurrentLevelCompleted();
+            LevelCompleted();
         }
     }
 

@@ -12,10 +12,9 @@ public class MoonLevelController : OSCReciever
         base.MapFeaturesToVisualisers ();
         if (MoonMaskController != null && MoonMaskController.MoonShouldMove != AudioGesturePlaying)
             MoonMaskController.MoonShouldMove = AudioGesturePlaying;
-        if (HasMoonMaskReachedTarget() && !LevelComplete)
+        if (HasMoonMaskReachedTarget())
         {
-            LevelComplete = true;
-            GlobalController.GetGlobalController().CurrentLevelCompleted();
+            LevelCompleted();
         }
     }
 

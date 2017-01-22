@@ -87,7 +87,7 @@ public class CityLevelController : OSCReciever
             UpdateAudioLayers();
             if (WindowIndex > Windows.Count - 1)
             { 
-                GlobalController.GetGlobalController().CurrentLevelCompleted();
+                LevelCompleted();
             }
         }
     }
