@@ -363,6 +363,10 @@ public class OSCReciever : MonoBehaviour
     protected AudioGestureSegmenter   AudioSegmenter      = new AudioGestureSegmenter();
     protected bool                    AudioGesturePlaying = false;
     protected OSCFeaturesInputHandler osc                 = new OSCFeaturesInputHandler();
+
+    protected bool ShouldMapSoundtoBloom                  = true;
+    protected bool LevelComplete = false;
+
     const string                      featuresAddress     = "/Audio/A0";
 
     // Use this for initialization
@@ -391,25 +395,28 @@ public class OSCReciever : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if (UseExternalFeatureExtractor)
+        if (ShouldMapSoundtoBloom)
         { 
-            float rms = osc.Feature (AudioFeature.RMS);
-            float pitch = osc.Feature (AudioFeature.F0);
-            if (CameraBloom != null)
+            if (UseExternalFeatureExtractor)
             { 
-                CameraBloom.settings.threshold = pitch * 0.4f + 0.5f;
-                CameraBloom.settings.radius    = rms * 4.0f + 1.0f;
-                CameraBloom.settings.intensity = pitch + rms; //average * 2 to map to 0-2...
+                float rms = osc.Feature (AudioFeature.RMS);
+                float pitch = osc.Feature (AudioFeature.F0);
+                if (CameraBloom != null)
+                { 
+                    CameraBloom.settings.threshold = pitch * 0.4f + 0.5f;
+                    CameraBloom.settings.radius    = rms * 4.0f + 1.0f;
+                    CameraBloom.settings.intensity = pitch + rms; //average * 2 to map to 0-2...
+                }
             }
-        }
-        else if (MicRMSListener != null)
-        {
-            float rms = MicRMSListener.RMS.getValue();
-            if (CameraBloom != null)
-            { 
-                CameraBloom.settings.threshold = rms * 0.4f + 0.5f;
-                CameraBloom.settings.radius    = rms * 4.0f + 1.0f;
-                CameraBloom.settings.intensity = rms * 2.0f;
+            else if (MicRMSListener != null)
+            {
+                float rms = MicRMSListener.RMS.getValue();
+                if (CameraBloom != null)
+                { 
+                    CameraBloom.settings.threshold = rms * 0.4f + 0.5f;
+                    CameraBloom.settings.radius    = rms * 4.0f + 1.0f;
+                    CameraBloom.settings.intensity = rms * 2.0f;
+                }
             }
         }
         if (DebugAudioFeatures && !UseExternalFeatureExtractor && MicRMSListener != null)
@@ -454,5 +461,14 @@ public class OSCReciever : MonoBehaviour
     public virtual void AudioRMSGestureBegan() { AudioGesturePlaying = true; }
     public virtual void AudioRMSGestureEnded() { AudioGesturePlaying = false; }
 
+    protected void LevelCompleted()
+    {
+        if (!LevelComplete)
+        {
+            LevelComplete = true;
+            GlobalController.GetGlobalController().PlayWinSound();
+            GlobalController.GetGlobalController().LoadNextLevel();
+        }
+    }
     
 }

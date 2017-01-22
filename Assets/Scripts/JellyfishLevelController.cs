@@ -26,7 +26,7 @@ public class JellyfishLevelController : OSCReciever
     {
         base.MapFeaturesToVisualisers();
         if (HaveAllTargetsBeenReached())
-            GlobalController.GetGlobalController().PlayWinSound();
+            LevelCompleted();
         
     }
 
