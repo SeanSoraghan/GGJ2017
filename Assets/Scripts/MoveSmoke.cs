@@ -6,7 +6,7 @@ public class MoveSmoke : MonoBehaviour
 {
 
         public float speed;
-        public float spriteWidth;
+        public float spriteHeight;
         private float screenWidth;
         private float trainLength;
         public float numberOfClones;
@@ -17,8 +17,8 @@ public class MoveSmoke : MonoBehaviour
         {
 
             screenWidth = Screen.width;
-            spriteWidth = gameObject.GetComponent<SpriteRenderer>().sprite.rect.width;
-            trainLength = numberOfClones * (spriteWidth / 100);
+            spriteHeight = gameObject.GetComponent<SpriteRenderer>().sprite.rect.height;
+            trainLength = (numberOfClones - 1) * (spriteHeight / 100);
 
 
 
@@ -28,12 +28,12 @@ public class MoveSmoke : MonoBehaviour
         void Update()
         {
 
-            transform.Translate(Vector3.right * speed * Time.deltaTime);
+            transform.Translate(Vector3.up * speed * Time.deltaTime);
 
             if (gameObject.transform.position.y > 30)
             {
 
-                gameObject.transform.Translate(-trainLength, 0, 0);
+                gameObject.transform.Translate(0, -trainLength, 0);
             }
 
         }

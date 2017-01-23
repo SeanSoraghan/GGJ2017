@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MoveBoat : MonoBehaviour {
 
+    public GameObject Cloud;
     public float moveSpeed = 0.5f;
     public float stopPosition = 1.5f;
 
@@ -22,7 +23,7 @@ public class MoveBoat : MonoBehaviour {
 
         else
         {
-            if (GameObject.Find("Cloud 1").transform.position.x > 5)
+            if (Cloud != null && Cloud.transform.position.x > 5)
             {
                 gameObject.transform.Translate(Vector3.left * moveSpeed * Time.deltaTime);
             }

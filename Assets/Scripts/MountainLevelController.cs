@@ -8,6 +8,8 @@ public class MountainLevelController : OSCReciever
     public MoveCloud Cloud;
     public MoveCloud2 Cloud2;
 
+    public GameObject Boat;
+    public GameObject BoatTarget;
     public GameObject Cloud1Target;
     public GameObject Cloud2Target;
 
@@ -16,9 +18,9 @@ public class MountainLevelController : OSCReciever
         base.MapFeaturesToVisualisers ();
         bool cloud1Passed = Cloud.gameObject.transform.position.x < Cloud1Target.transform.position.x;
         bool Cloud2Passed = Cloud2.gameObject.transform.position.x > Cloud2Target.transform.position.x;
-        if (cloud1Passed && Cloud2Passed)
+        if (Boat.transform.position.x < BoatTarget.transform.position.x)
         {
-            GlobalController.GetGlobalController().CurrentLevelCompleted();
+            LevelCompleted();
         }
     }
 

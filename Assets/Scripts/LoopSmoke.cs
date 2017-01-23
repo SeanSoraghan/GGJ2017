@@ -30,9 +30,9 @@ public class LoopSmoke : MonoBehaviour {
             go.transform.position = gameObject.transform.position;
             go.transform.rotation = gameObject.transform.rotation;
 
-            float pos = sprite.rect.width / 100;
+            float pos = sprite.rect.height / 100;
             pos = pos *= i;
-            go.transform.Translate(-pos, 0, 0);
+            go.transform.Translate(0, -pos, 0);
 
             go.AddComponent<MoveSmoke>();
             go.GetComponent<MoveSmoke>().speed = this.speed;
@@ -44,7 +44,7 @@ public class LoopSmoke : MonoBehaviour {
     void Update()
     {
 
-        transform.Translate(Vector3.right * speed * Time.deltaTime);
+        transform.Translate(Vector3.up * speed * Time.deltaTime);
 
         if (gameObject.transform.position.y > 30)
         {
